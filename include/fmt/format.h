@@ -1655,10 +1655,17 @@ auto snprintf_float(T value, int precision, float_specs specs,
     abort_fuzzing_if(precision > 100000);
     // Suppress the warning about a nonliteral format string.
     // Cannot use auto because of a bug in MinGW (#1532).
+#if FMT_GCC_VERSION
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+#endif
     int (*snprintf_ptr)(char*, size_t, const char*, ...) = FMT_SNPRINTF;
     int result = precision >= 0
                      ? snprintf_ptr(begin, capacity, format, precision, value)
                      : snprintf_ptr(begin, capacity, format, value);
+#if FMT_GCC_VERSION
+#  pragma GCC diagnostic pop
+#endif
     if (result < 0) {
       // The buffer will grow exponentially.
       buf.try_reserve(buf.capacity() + 1);
